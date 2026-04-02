@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/:filename.mp4", "destination": "/index.html" },
+    { "source": "/:filename.mov", "destination": "/index.html" }
+  ]
+}
